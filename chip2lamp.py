@@ -16,6 +16,7 @@ import subprocess
 from optparse import OptionParser
 from check_exp import check_exp
 from check_peak import check_peak
+from check_peak import readPeakListFile
 
 # __all__ = []
 __version__ = 1.0
@@ -185,7 +186,7 @@ def main(argv=None):
             parser.add_option(
                 '-p', '--peak', action='store',
                 dest='arg_peak',
-                default='', nargs=n,
+                default='', nargs=n, 
                 help='Peak files listed in spaces')
             parser.add_option(
                 '-u', '--up', action='store',
@@ -220,6 +221,13 @@ def main(argv=None):
                 default=False,
                 help='Use this option when the peak files are generated with MACS2.')
 
+            # add AT, Jul. 6, 2015
+            parser.add_option(
+                '--list', action='store',
+                dest='arg_list',
+                default="",
+                help='Filename that lists peak file paths.')
+
             (o, a) = parser.parse_args()
             op = o.__dict__
             genefile = op['arg_gene']
@@ -234,11 +242,28 @@ def main(argv=None):
             verbose = op['arg_verbose']
             label = op['arg_label']
             macs2 = op['macs2']
+            plist = op['arg_list']
+            
             if '' in (genefile, difffile):
                 raise TypeError()
 
+            if (len(plist) > 0 and len(peakfiles) > 0) \
+                   or (len(plist) == 0 and len(peakfiles) == 0):
+                sys.stderr.write("[Error] Input peak files using either --peak or --list options.\n")
+                raise Error()
+
+            elif len(plist) > 0:
+                peakfiles = readPeakListFile(plist)
+                
             if 0 == len(peakfiles):
                 raise TypeError()
+
+            if isinstance(peakfiles, str):
+                peakfiles = tuple([peakfiles])
+            
+        except IOError, e:
+            print >> sys.stderr, "%s" % e
+            return 2
         except:
             usage(program_name)
             return 2
@@ -257,12 +282,14 @@ def main(argv=None):
                 q_threshold_default,
                 exp_threshold_default,
                 'b', tmpoutexp)
-
         # Execute checkPeak.pl
         tmpoutpeak = outpeak + '.tmp'
-        check_peak(genefile, peakfiles, tmpoutpeak,
-            outdist, updist, indist, label, 0.0, macs2)
-
+        try:
+            check_peak(genefile, peakfiles, tmpoutpeak,
+                       outdist, updist, indist, label, 0.0, macs2)
+        except IOError, e:
+            print >> sys.stderr, "%s" % e
+            return 2
         check_consistency(tmpoutexp, tmpoutpeak, outexp, outpeak, peak_check)
 
         # Remove temporary files

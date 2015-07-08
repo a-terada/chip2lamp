@@ -23,6 +23,15 @@ SCO_THRESHOLD = 0.0
 DEFAULT_VALUE = -sys.maxint
 
 
+def readPeakListFile(plist):
+    line = ""
+    peakfiles = []
+    f = open(plist, 'r')
+    for line in f:
+        peakfiles.append(line[:-1])
+    f.close()
+    return tuple(peakfiles)
+
 def binFromRangeStandard(sta, end):
     """Calculate bin.
 
@@ -273,6 +282,8 @@ def main():
         outFile = ''
         labelStr = ''
         flg = 0
+        s = 0
+        e = 0
         op_part = re.compile('^-')
 
         for p in range(len(sys.argv)):
@@ -320,7 +331,7 @@ def main():
             '-l', '--label', action='store', dest='arg_label',
             default='',
             help='Peak names listed in commas')
-
+        
         # add AT, Apr. 13, 2015
         parser.add_option(
             '--macs2', action='store_true',
@@ -328,35 +339,56 @@ def main():
             default=False,
             help='Use this option when the peak files are generated with MACS2.')
 
+        # add AT, Jul. 6, 2015
+        parser.add_option(
+            '--list', action='store',
+            dest='arg_list',
+            default="",
+            help='Filename that lists peak file paths.')
+
         (opt, args) = parser.parse_args()
         arg = opt.__dict__
-        peakFiles = arg['arg_peak']
-        geneFile = arg['arg_gene']
-        distFile = arg['arg_dist']
-        outFile = arg['arg_out']
+        peakfiles = arg['arg_peak']
+        genefile = arg['arg_gene']
+        outdist = arg['arg_dist']
+        outfile = arg['arg_out']
         updist = arg['arg_up']
         indist = arg['arg_in']
         labelStr = arg['arg_label']
-        if '' in (geneFile, outFile, distFile):
+        plist = arg['arg_list']
+        
+        if '' in (genefile, outfile, outdist):
             raise TypeError()
+        
+        if (len(plist) > 0 and len(peakfiles) > 0) \
+               or (len(plist) == 0 and len(peakfiles) == 0):
+            sys.stderr.write("[Error] Input peak files using either --peak or --list options.\n")
+            raise Error()
+        elif len(plist) > 0:
+            peakfiles = readPeakListFile(plist)
 
-        if 0 == len(peakFiles):
+        if 0 == len(peakfiles):
             raise TypeError()
 
         if updist <= 0 or indist <= 0:
             raise TypeError()
 
+        if isinstance(peakfiles, str):
+            peakfiles = tuple([peakfiles])
+        """
         if str is type(peakFiles):
             peakFiles = [peakFiles]
         else:
             peakFiles = list(peakFiles)
+        """
     except:
         print 'Usage: ' + str(sys.argv[0]) + \
               ' --gene genes.gtf --peak peakFile [peakFile2 peakFile3 ...] --out out_peak.txt --dist out_dist.txt [--up ' + \
               str(UPDIST_DEFAULT) + '] [--in ' + \
               str(INDIST_DEFAULT) + ']  [--label TF1,TF2, ...] [--macs2]'
         sys.exit()
-    check_peak(genefile, peakfiles, tmpoutpeak,
+        
+    check_peak(genefile, peakfiles, outfile,
         outdist, updist, indist, labelStr, sco_threshold, arg['macs2'])
 
 def check_peak(geneFile, peakFiles, outFile, distFile,
