@@ -14,13 +14,15 @@ from optparse import OptionParser
 
 __version__ = 1.0
 __date__ = '2015-06-27'
-__updated__ = '2015-06-27'
+__updated__ = '2017-04-22'
 
 # default value
 UPDIST_DEFAULT = 2000
 INDIST_DEFAULT = 300
 SCO_THRESHOLD = 0.0
-DEFAULT_VALUE = -sys.maxint
+#DEFAULT_VALUE = -sys.maxint for Python2
+#DEFAULT_VALUE = -sys.maxsize for Python3
+DEFAULT_VALUE = -1000000
 
 
 def binFromRangeStandard(sta, end):
@@ -79,8 +81,9 @@ def readGeneFile(geneFile, peakFiles):
 
     if (file_part.search(geneFile) is None) \
        and (file_part2.search(geneFile) is None):
-        print >> sys.stderr, 'Error: Fail to open ' + \
-            geneFile + 'with unknown file extentions.'
+        print('Error: Fail to open ' + \
+              geneFile + 'with unknown file extentions.',
+              file=sys.stderr)
         sys.exit()
 
     for fh in r_geneFile:
@@ -95,18 +98,20 @@ def readGeneFile(geneFile, peakFiles):
 
         arr = fh.split('\t')
         if 9 > len(arr):
-            print >> sys.stderr, 'Error: Less columns at line ' + \
-                str(count) + ' in ' + geneFile
+            print('Error: Less columns at line ' + \
+                  str(count) + ' in ' + geneFile,
+                  file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[3]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 4 in ' + geneFile
+            print(sys.stderr, 'Error: Non-numeric value at line ' + \
+                  str(count) + ' column 4 in ' + geneFile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[4]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 5 in ' + geneFile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 5 in ' + geneFile,
+                  file=sys.stderr)
             sys.exit()
 
         chrom = arr[0]
@@ -143,7 +148,8 @@ def readGeneFile(geneFile, peakFiles):
     r_geneFile.close()
 
     if count - ecount <= 0:
-        print >> sys.stderr, 'Error: No valid line in ' + geneFile
+        print(sys.stderr, 'Error: No valid line in ' + geneFile,
+              file=sys.stderr)
         sys.exit()
 
     return bin2genes, gene2peaks
@@ -182,23 +188,25 @@ def readPeakFile(peakfile, bin2genes, gene2peaks, updist, indist, sco_threshold,
         arr = fh.split('\t')
         if col_length > len(arr):
 #        if 5 > len(arr):
-            print >> sys.stderr, 'Error: Less columns at line ' + \
-                str(count) + ' in ' + peakfile
+            print('Error: Less columns at line ' + \
+                  str(count) + ' in ' + peakfile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[1]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 2 in ' + peakfile
+            print(sys.stderr, 'Error: Non-numeric value at line ' + \
+                  str(count) + ' column 2 in ' + peakfile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[2]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 3 in ' + peakfile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 3 in ' + peakfile,
+                  file=sys.stderr)
             sys.exit()
         if None is retsu_part.search(arr[sco_col]):
 #        if None is retsu_part.search(arr[4]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 5 in ' + peakfile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 5 in ' + peakfile,
+                  file=sys.stderr)
             sys.exit()
 
         chrom = arr[0]
@@ -258,7 +266,7 @@ def readPeakFile(peakfile, bin2genes, gene2peaks, updist, indist, sco_threshold,
                         gene2peaks[x['gene']][peakfile]['dist'] = dist
     r_file.close()
     if count - ecount <= 0:
-        print >> sys.stderr, 'Error: No valid line in ' + peakfile
+        print('Error: No valid line in ' + peakfile, file=sys.stderr)
         sys.exit()
 
     return gene2peaks
@@ -351,10 +359,10 @@ def main():
         else:
             peakFiles = list(peakFiles)
     except:
-        print 'Usage: ' + str(sys.argv[0]) + \
+        print('Usage: ' + str(sys.argv[0]) + \
               ' --gene genes.gtf --peak peakFile [peakFile2 peakFile3 ...] --out out_peak.txt --dist out_dist.txt [--up ' + \
               str(UPDIST_DEFAULT) + '] [--in ' + \
-              str(INDIST_DEFAULT) + ']  [--label TF1,TF2, ...] [--macs2]'
+              str(INDIST_DEFAULT) + ']  [--label TF1,TF2, ...] [--macs2]')
         sys.exit()
     check_peak(genefile, peakfiles, tmpoutpeak,
         outdist, updist, indist, labelStr, sco_threshold, arg['macs2'])

@@ -14,7 +14,7 @@ from optparse import OptionParser
 
 __version__ = 1.0
 __date__ = '2015-06-27'
-__updated__ = '2015-06-27'
+__updated__ = '2017-04-22'
 
 # default value
 Q_THRESHOLD_DEFAULT = 0.05
@@ -226,10 +226,10 @@ def main():
         if q_threshold < 0 or exp_threshold < 0:
             raise TypeError()
     except:
-        print 'Usage:' + ' ' + str(sys.argv[0]) + \
+        print('Usage:' + ' ' + str(sys.argv[0]) + \
             ' --gene genes.gtf --diff gene_exp.diff --out out_exp.txt [--qval ' + \
               str(Q_THRESHOLD_DEFAULT) + '] [--exp ' + \
-              str(EXP_THRESHOLD_DEFAULT) + ']'
+              str(EXP_THRESHOLD_DEFAULT) + ']')
         sys.exit()
 
     check_exp(gene_file, gene_diff_file,

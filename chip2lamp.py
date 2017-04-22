@@ -20,7 +20,7 @@ from check_peak import check_peak
 # __all__ = []
 __version__ = 1.0
 __date__ = '2015-06-27'
-__updated__ = '2015-06-27'
+__updated__ = '2017-04-22'
 
 DEBUG = 0
 TESTRUN = 0
@@ -43,10 +43,10 @@ def usage(program_name):
     Returns: None
 
     """
-    print 'Usage: ' + program_name + ' --gene genes.gtf --diff gene_exp.diff --peak peakFile [peakFile2 peakFile3 ...]' \
+    print('Usage: ' + program_name + ' --gene genes.gtf --diff gene_exp.diff --peak peakFile [peakFile2 peakFile3 ...]' \
         ' [--exp ' + str(EXP_THRESHOLD_DEFAULT) + '] [--qval ' + str(Q_THRESHOLD_DEFAULT) + ']' \
         ' [--up ' + str(UPDIST_DEFAULT) + '] [--in ' + str(INDIST_DEFAULT) + '] [--out ' + str(OUT_DEFAULT) + ']' \
-        ' [--label TF1,TF2, ...] [--peakcheck] [--macs2]'
+        ' [--label TF1,TF2, ...] [--peakcheck] [--macs2]')
 
 
 def checkAllZero(arg0):
@@ -88,13 +88,13 @@ def check_consistency(expfile, peakfile, outexpfile, outpeakfile, peak_check):
             num = num + 1
             line = line.rstrip()
             if headprog.match(line):
-                print >> outpeakfp, line
+                print(line, file=outpeakfp)
                 continue
             sp = line.split(',')
             size = len(sp)
             if size < 2:
-                print >> sys.stderr, 'Error: Few columns at line %d in %s.' % (
-                    num, peakfile)
+                print('Error: Few columns at line %d in %s.' % (
+                    num, peakfile), file=sys.stderr)
                 sys.exit()
             peaks[sp[0]] = [checkAllZero(sp[1:]), line]
 
@@ -103,17 +103,17 @@ def check_consistency(expfile, peakfile, outexpfile, outpeakfile, peak_check):
             num = num + 1
             line = line.rstrip()
             if headprog.match(line):
-                print >> outexpfp, line
+                print(line, file=outexpfp)
                 continue
             sp = line.split(',')
             size = len(sp)
             if size < 2:
-                print >> sys.stderr, 'Error: Few columns at line %d in %s.' % (
-                    num, peakfile)
+                print('Error: Few columns at line %d in %s.' % (
+                    num, peakfile), file=sys.stderr)
                 sys.exit()
             if peaks.get(sp[0], '') == '':
-                print >> sys.stderr, 'Warning: Gene %s is not found in %s.' % (
-                    sp[0], peakfile)
+                print('Warning: Gene %s is not found in %s.' % (
+                    sp[0], peakfile), file=sys.stderr)
                 continue
 
             if not peak_check:
@@ -126,8 +126,8 @@ def check_consistency(expfile, peakfile, outexpfile, outpeakfile, peak_check):
 
     for (key, value) in peaks.items():
         if value is not '':
-            print >> sys.stderr, 'Warning: Gene %s is not found in %s.' % (
-                key, expfile)
+            print('Warning: Gene %s is not found in %s.' % (
+                key, expfile), file=sys.stderr)
 
 def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
@@ -247,9 +247,9 @@ def main(argv=None):
         outpeak = out + '_peak.txt'
         outdist = out + '_dist.txt'
 
-        print >> sys.stderr, "Upstream from TSS (bp): %d" % updist
-        print >> sys.stderr, "Downstream from TSS (bp): %d" % indist
-        print >> sys.stderr, "q-value threshold for DEG: %f" % q_threshold_default
+        print("Upstream from TSS (bp): %d" % updist, file=sys.stderr)
+        print("Downstream from TSS (bp): %d" % indist, file=sys.stderr)
+        print("q-value threshold for DEG: %f" % q_threshold_default, file=sys.stderr)
 
         # Execute checkExp.pl
         tmpoutexp = outexp + '.tmp'

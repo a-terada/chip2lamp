@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 """reportLamp.py converts LAMP result to report.
 
-@author:     ohta
-@copyright:  2015 Amelieff Corporation. All rights reserved.
-@license:
-@contact:
+@author:     LAMP dev team
+@copyright:  LAMP dev team
+@license:    GPLv3
+@contact:    lamp_staff(AT)googlegroups.com
 @deffield    updated: Updated
 
 """
@@ -13,8 +13,8 @@ import sys
 from optparse import OptionParser
 
 
-RANK_THRESHOLD_DEFAULT = -sys.maxint
-DEFAULT_VALUE = -sys.maxint
+RANK_THRESHOLD_DEFAULT = -1000000 #-sys.maxint
+DEFAULT_VALUE = -10000000 #-sys.maxint
 SEP = '\t'
 
 
@@ -49,18 +49,18 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
 
         arr = fh.split('\t')
         if 4 > len(arr):
-            print >> sys.stderr, 'Error: Less columns at line ' + \
-                str(count) + ' in ' + lampfile
+            print('Error: Less columns at line ' + \
+                  str(count) + ' in ' + lampfile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[0]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 1 in ' + lampfile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 1 in ' + lampfile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr[1]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 2 in ' + lampfile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 2 in ' + lampfile, file=sys.stderr)
             sys.exit()
 
         rank = int(arr[0])
@@ -73,7 +73,7 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
     r_file.close()
 
     if count - ecount <= 0:
-        print >> sys.stderr, 'Error: No valid line in ' + lampfile
+        print('Error: No valid line in ' + lampfile, file=sys.stderr)
         sys.exit()
 
     count = 0
@@ -89,8 +89,8 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
 
         arr_2 = fh_2.split(',')
         if retsuval > len(arr_2):
-            print >> sys.stderr, 'Error: Less columns at line ' + \
-                str(count) + ' in ' + distfile
+            print('Error: Less columns at line ' + \
+                  str(count) + ' in ' + distfile, file=sys.stderr)
             sys.exit()
 
         gene = arr_2[0]
@@ -104,8 +104,8 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
             gene2dist[gene] = SEP.join(map(str, arr_2))
 
             if len(labelarr) != len(arr_2):
-                print >> sys.stderr, 'Error: Less columns at line ' + \
-                    str(count) + ' in ' + distfile
+                print('Error: Less columns at line ' + \
+                      str(count) + ' in ' + distfile, file=sys.stderr)
                 sys.exit()
 
             for comb_2 in combarr:
@@ -129,7 +129,7 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
     r2_file.close()
 
     if count - ecount <= 0:
-        print >> sys.stderr, 'Error: No valid line in ' + distfile
+        print('Error: No valid line in ' + distfile, file=sys.stderr)
         sys.exit()
     count = 0
     ecount = 0
@@ -149,13 +149,13 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
         arr_3 = fh_3.split(',')
 
         if 2 > len(arr_3):
-            print >> sys.stderr, 'Error: Less columns at line ' + \
-                str(count) + ' in ' + expfile
+            print('Error: Less columns at line ' + \
+                  str(count) + ' in ' + expfile, file=sys.stderr)
             sys.exit()
 
         if None is retsu_part.search(arr_3[1]):
-            print >> sys.stderr, 'Error: Non-numeric value at line ' + \
-                str(count) + ' column 2 in ' + expfile
+            print('Error: Non-numeric value at line ' + \
+                  str(count) + ' column 2 in ' + expfile, file=sys.stderr)
             sys.exit()
 
         gene = str(arr_3[0])
@@ -166,7 +166,7 @@ def readFiles(lampfile, distfile, expfile, rank_threshold):
     r3_file.close()
 
     if count - ecount <= 0:
-        print >> sys.stderr, 'Error: No valid line in ' + expfile
+        print('Error: No valid line in ' + expfile, file=sys.stderr)
         sys.exit()
 
     for i_2 in range(len(labelarr)):
@@ -216,9 +216,9 @@ def main():
         if rank_threshold != RANK_THRESHOLD_DEFAULT and rank_threshold < 1:
             raise TypeError()
     except:
-        print 'Usage: ' + str(sys.argv[0]) + \
+        print('Usage: ' + str(sys.argv[0]) + \
               ' --lamp out_lamp.txt --dist out_dist.txt' + \
-              ' --exp out_exp.txt --out out_report.txt [--rank rank]'
+              ' --exp out_exp.txt --out out_report.txt [--rank rank]')
         sys.exit()
 
     gene2comb, gene2dist, labelArr, combArr = readFiles(
