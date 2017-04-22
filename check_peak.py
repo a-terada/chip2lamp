@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 """checkPeak.py converts peak bed files to LAMP inputs.
 
 @author:     LAMP dev team

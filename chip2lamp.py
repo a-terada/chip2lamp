@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 """chip2lamp.py convert outputs of MACS and Cuffdiff to the input of LAMP.
 
 @author:     LAMP dev team
@@ -30,6 +32,7 @@ PROFILE = 0
 UPDIST_DEFAULT = 2000
 INDIST_DEFAULT = 300
 Q_THRESHOLD_DEFAULT = 0.05
+Q_COLUMN_DEFAULT = 12
 EXP_THRESHOLD_DEFAULT = 0.0
 OUT_DEFAULT = 'out'
 
@@ -44,7 +47,7 @@ def usage(program_name):
 
     """
     print('Usage: ' + program_name + ' --gene genes.gtf --diff gene_exp.diff --peak peakFile [peakFile2 peakFile3 ...]' \
-        ' [--exp ' + str(EXP_THRESHOLD_DEFAULT) + '] [--qval ' + str(Q_THRESHOLD_DEFAULT) + ']' \
+          ' [--exp ' + str(EXP_THRESHOLD_DEFAULT) + '] [--qval ' + str(Q_THRESHOLD_DEFAULT) + '] [--qcol ' + str(Q_COLUMN_DEFAULT) + ']' \
         ' [--up ' + str(UPDIST_DEFAULT) + '] [--in ' + str(INDIST_DEFAULT) + '] [--out ' + str(OUT_DEFAULT) + ']' \
         ' [--label TF1,TF2, ...] [--peakcheck] [--macs2]')
 
@@ -163,6 +166,11 @@ def main(argv=None):
                 default='',
                 help='Gene file in gtf/gff3 format')
             parser.add_option(
+                '--gcol', action='store',
+                dest='arg_gcol',
+                default=2,
+                help='Gene name column in expression file')
+            parser.add_option(
                 '-d', '--diff', action='store',
                 dest='arg_diff',
                 default='',
@@ -178,10 +186,25 @@ def main(argv=None):
                 default=Q_THRESHOLD_DEFAULT,
                 help='Maximum thhreshold of q-value(a non-negative value)')
             parser.add_option(
+                '--qcol', action='store',
+                dest='arg_qcol', type='int',
+                default=int(Q_COLUMN_DEFAULT),
+                help='Coumn number of q-value to be used')
+            parser.add_option(
                 '-x', '--exp', action='store',
                 dest='arg_exp',
                 default=EXP_THRESHOLD_DEFAULT,
                 help='Minimum threshold of expression value(a non-negative value)')
+            parser.add_option(
+                '--ecol1', action='store',
+                dest='arg_ecol1', type='int',
+                default=7,
+                help='Column number of expression value 1')
+            parser.add_option(
+                '--ecol2', action='store',
+                dest='arg_ecol2', type='int',
+                default=8,
+                help='Column number of expression value 2')
             parser.add_option(
                 '-p', '--peak', action='store',
                 dest='arg_peak',
@@ -223,10 +246,14 @@ def main(argv=None):
             (o, a) = parser.parse_args()
             op = o.__dict__
             genefile = op['arg_gene']
+            genecol = int(op['arg_gcol'])
             difffile = op['arg_diff']
             out = op['arg_out']
             q_threshold_default = float(op['arg_qval'])
+            q_column_default = int(op['arg_qcol'])
             exp_threshold_default = float(op['arg_exp'])
+            exp_column1_default = int(op['arg_ecol1'])
+            exp_column2_default = int(op['arg_ecol2'])
             peakfiles = op['arg_peak']
             updist = int(op['arg_up'])
             indist = int(op['arg_in'])
@@ -250,13 +277,17 @@ def main(argv=None):
         print("Upstream from TSS (bp): %d" % updist, file=sys.stderr)
         print("Downstream from TSS (bp): %d" % indist, file=sys.stderr)
         print("q-value threshold for DEG: %f" % q_threshold_default, file=sys.stderr)
+        #print("q-value column num for DEG: %d" % q_column_default, file=sys.stderr)
 
         # Execute checkExp.pl
         tmpoutexp = outexp + '.tmp'
-        check_exp(genefile, difffile,
-                q_threshold_default,
-                exp_threshold_default,
-                'b', tmpoutexp)
+        check_exp(genefile, difffile, genecol,
+                  q_threshold_default,
+                  q_column_default,
+                  exp_threshold_default,
+                  exp_column1_default,
+                  exp_column2_default,
+                  'b', tmpoutexp)
 
         # Execute checkPeak.pl
         tmpoutpeak = outpeak + '.tmp'
